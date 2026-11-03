@@ -1,0 +1,26 @@
+# Python virtual environment
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Logs and temporary files
+*.log
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.DS_Store
+
+# Temporary audit screenshots
+static/audit_before.png
+static/audit_after.png
+
+# Model and cache files
+models/
+.cache/
+static/demo_target_healed.html
