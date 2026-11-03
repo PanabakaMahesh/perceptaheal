@@ -49,7 +49,6 @@ Detect → Explain → Repair → Verify
 | Browser Automation | Playwright |
 | Frontend | HTML, CSS, JavaScript |
 | AI Model | Meta Llama 3.2 3B through Ollama (optional local integration) |
-| Visual Processing | OpenCV |
 | Data Storage | Local file-based MVP |
 
 ## AI Integration
