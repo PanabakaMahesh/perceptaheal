@@ -1,33 +1,154 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>PerceptaHeal Studio</title>
 <style>
-:root{font-family:Inter,system-ui,Arial,sans-serif;color:#e7edf7;background:#0b1220}*{box-sizing:border-box}body{margin:0;padding:28px}.wrap{max-width:1240px;margin:auto}.top{display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap}.tag{color:#9bc5ff;background:#142846;padding:7px 11px;border-radius:99px;font-size:12px}.muted{color:#9aa9bd}.controls,.card{background:#121d2e;border:1px solid #25334a;border-radius:16px;padding:18px}.controls{margin:20px 0;display:flex;gap:12px;align-items:end;flex-wrap:wrap}label{display:block;color:#b6c5d8;font-size:13px;margin-bottom:6px}input,select{background:#0a1322;border:1px solid #34445f;color:#fff;padding:11px;border-radius:9px;min-width:180px}button{border:0;border-radius:9px;padding:12px 16px;font-weight:700;color:white;background:#2563eb;cursor:pointer}button.green{background:#059669}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.card h3{margin-top:0}.shot{width:100%;border:1px solid #34445f;border-radius:10px;background:#09101c;min-height:120px;object-fit:contain}.issue{padding:10px 12px;border-left:3px solid #ef4444;background:#1a2638;border-radius:7px;margin:8px 0;font-size:13px}.note{padding:9px 11px;border-left:3px solid #60a5fa;background:#15283e;border-radius:7px;margin:7px 0;font-size:12px}.good{color:#86efac}.bad{color:#fbbf24}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#080f1b;padding:12px;border-radius:9px;color:#a7f3d0;font-size:12px;max-height:300px;overflow:auto}.wide{grid-column:1/-1}.actions{display:flex;gap:8px;flex-wrap:wrap}.statrow{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}.stat{background:#0a1322;border:1px solid #2c3a50;border-radius:10px;padding:9px 12px;font-size:13px}.stat strong{font-size:18px;display:block;margin-top:3px}@media(max-width:760px){body{padding:14px}.grid{grid-template-columns:1fr}.wide{grid-column:auto}}
-</style></head>
-<body><div class="wrap">
-<div class="top"><div><h1 style="margin:0">PerceptaHeal Studio</h1><p class="muted">Multilingual visual UI auditor · detect → explain → repair → verify</p></div><span class="tag">LOCAL MVP · PLAYWRIGHT + OPTIONAL META LLAMA</span></div>
-<div class="controls">
-<div><label>Target page</label><input id="url" value="http://127.0.0.1:8000/demo" size="34"></div>
-<div><label>Viewport</label><select id="width"><option value="390">Mobile · 390px</option><option value="412">Mobile · 412px</option><option value="1280">Desktop · 1280px</option></select></div>
-<div><label>Language</label><select id="language"><option value="ta">Tamil · தமிழ்</option><option value="hi">Hindi · हिन्दी</option><option value="en">English</option><option value="de">German · Deutsch</option></select></div>
-<div class="actions"><button onclick="audit()">1. Run visual audit</button><button class="green" onclick="heal()">2. Auto-heal & verify</button></div>
+:root{
+  color-scheme:dark;
+  --bg:#08090a;--surface:#101214;--surface-2:#15181b;--surface-3:#1b1f23;
+  --line:#292e33;--line-soft:#202428;--text:#f2f4f5;--muted:#929ba3;
+  --muted-2:#69737c;--accent:#9fe870;--accent-dark:#263c20;
+  --cyan:#7dd3fc;--red:#fb7185;--amber:#fbbf24;--shadow:0 18px 55px rgba(0,0,0,.34);
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 12% 0%,#15191b 0,transparent 34%),var(--bg);color:var(--text)}
+button,input,select{font:inherit}
+button{cursor:pointer}
+.app{max-width:1480px;margin:0 auto;padding:28px 30px 48px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:20px;padding-bottom:24px;border-bottom:1px solid var(--line-soft)}
+.brand{display:flex;align-items:center;gap:14px;min-width:0}
+.mark{width:42px;height:42px;border-radius:13px;background:linear-gradient(145deg,#c3f79c,#6b9c45);display:grid;place-items:center;color:#10160c;font-size:21px;font-weight:900;box-shadow:0 7px 24px #9fe87024}
+.brand h1{font-size:20px;letter-spacing:-.045em;margin:0;font-weight:760}
+.brand p{font-size:12px;color:var(--muted);margin:4px 0 0}
+.top-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.pill{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:999px;background:#111416;padding:8px 12px;font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:#aeb6bc}
+.dot{width:7px;height:7px;border-radius:50%;background:#777}.dot.ok{background:var(--accent);box-shadow:0 0 10px #9fe87078}.dot.warn{background:var(--amber)}
+.hero{padding:30px 0 24px;display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap}
+.eyebrow{font-size:11px;letter-spacing:.19em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:10px}
+.hero h2{font-size:clamp(27px,4vw,42px);line-height:1.04;letter-spacing:-.055em;margin:0;max-width:800px}
+.hero p{font-size:14px;line-height:1.65;color:var(--muted);margin:12px 0 0;max-width:720px}
+.local-note{border:1px solid #31402b;background:#111811;color:#b9d9a5;border-radius:12px;padding:12px 14px;font-size:12px;line-height:1.5;max-width:360px}
+.controls{display:grid;grid-template-columns:minmax(260px,2.2fr) minmax(150px,1fr) minmax(160px,1fr) auto;gap:12px;align-items:end;background:linear-gradient(145deg,#141719,#0e1012);border:1px solid var(--line);border-radius:17px;padding:17px;box-shadow:var(--shadow)}
+.field label{display:block;color:#aab3b9;font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;margin:0 0 8px}
+.field input,.field select{width:100%;height:44px;border:1px solid #333a40;border-radius:10px;padding:0 12px;background:#090b0d;color:#eff2f4;outline:none;min-width:0}
+.field input:focus,.field select:focus{border-color:#8ebd6c;box-shadow:0 0 0 3px #9fe87018}
+.field small{display:block;color:var(--muted-2);font-size:10px;margin-top:6px}
+.actions{display:flex;gap:9px;flex-wrap:wrap}
+.btn{height:44px;padding:0 16px;border-radius:10px;border:1px solid #3b454c;background:#1c2226;color:#eef2f4;font-size:12px;font-weight:750;transition:.16s ease;white-space:nowrap}
+.btn:hover{border-color:#66737c;background:#232a2f;transform:translateY(-1px)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#10160c}
+.btn.primary:hover{background:#b3f58b}
+.btn.secondary{background:#151a1d;border-color:#3a4349;color:#f0f2f3}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0}
+.metric{background:#101315;border:1px solid var(--line-soft);border-radius:13px;padding:15px 16px;min-height:85px}
+.metric .label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.11em;font-weight:700}
+.metric strong{display:block;font-size:24px;letter-spacing:-.04em;margin-top:8px;font-weight:720}
+.metric strong.green{color:var(--accent)}
+.workspace{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.panel{background:linear-gradient(155deg,#121517,#0e1011);border:1px solid var(--line);border-radius:16px;padding:17px;min-width:0;box-shadow:0 10px 30px #0000001c}
+.panel.wide{grid-column:1/-1}
+.panel-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:13px}
+.panel h3{font-size:13px;letter-spacing:-.01em;margin:0;font-weight:750}
+.panel-sub{color:var(--muted);font-size:11px;margin:5px 0 0}
+.mini-tag{border:1px solid var(--line);border-radius:999px;padding:5px 8px;color:#aab2b7;font-size:10px;white-space:nowrap}
+.shot{display:block;width:100%;height:auto;min-height:130px;max-height:760px;object-fit:contain;object-position:top center;border-radius:11px;border:1px solid #282e32;background:#080a0b}
+.shot.empty{display:grid;place-items:center;color:#5f6970;padding:40px 12px;font-size:12px}
+.issue-list,.note-list{margin-top:12px}
+.issue{border:1px solid #49272e;border-left:3px solid var(--red);border-radius:10px;background:#1a1114;padding:11px 12px;margin:8px 0;font-size:12px;line-height:1.55}
+.issue b{color:#ffc0cb}.note{border:1px solid #3b3421;border-left:3px solid var(--amber);border-radius:10px;background:#17150f;padding:10px 12px;margin:8px 0;font-size:11px;line-height:1.55;color:#e4d8b5}
+.good{border:1px solid #2e4828;border-left:3px solid var(--accent);border-radius:10px;background:#10190f;padding:11px 12px;color:#c2e7b0;font-size:12px;margin:8px 0}
+.muted{color:var(--muted)}code{color:#c6e7b2;background:#171d18;padding:2px 5px;border-radius:5px;overflow-wrap:anywhere}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#090c0d;border:1px solid #283035;padding:14px;border-radius:11px;color:#c4f0a9;font-size:11px;line-height:1.6;max-height:350px;overflow:auto;margin:10px 0}
+.status{margin:12px 0 0;padding:11px 13px;border-radius:10px;background:#111518;border:1px solid var(--line-soft);font-size:12px;color:#b4bdc3;line-height:1.5}
+.status.success{border-color:#334b2d;background:#11180f;color:#c4e8b2}.status.warning{border-color:#5a4722;background:#1a160e;color:#f3d99a}.status.error{border-color:#5e3039;background:#1a1013;color:#ffc2ca}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:10px;color:var(--muted);margin-top:12px}.legend span{display:inline-flex;align-items:center;gap:6px}.swatch{width:8px;height:8px;border-radius:2px;background:var(--red)}.swatch.amber{background:var(--amber)}
+.link-row{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px}.link-row a{font-size:11px;color:var(--cyan);text-decoration:none}.link-row a:hover{text-decoration:underline}
+.footer{padding:25px 2px 0;color:#59636a;font-size:10px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.spinner{display:inline-block;width:12px;height:12px;border:2px solid #68736c;border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;vertical-align:-2px;margin-right:7px}@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:980px){.controls{grid-template-columns:1fr 1fr}.actions{grid-column:1/-1}.actions .btn{flex:1}}
+@media(max-width:700px){.app{padding:18px 14px 32px}.topbar{align-items:flex-start}.top-right{width:100%;justify-content:flex-start}.workspace{grid-template-columns:1fr}.panel.wide{grid-column:auto}.metrics{grid-template-columns:1fr 1fr}.controls{grid-template-columns:1fr}.actions{grid-column:auto}.hero{padding-top:23px}.local-note{max-width:none;width:100%}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand"><div class="mark">P</div><div><h1>PerceptaHeal</h1><p>Multilingual UI quality studio</p></div></div>
+    <div class="top-right">
+      <span class="pill"><i class="dot ok"></i> Local audit engine</span>
+      <span class="pill" id="llmBadge"><i class="dot"></i> Checking Llama…</span>
+      <span class="pill">v0.5 · Matte Black</span>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div><div class="eyebrow">Detect · Explain · Repair · Verify</div><h2>Make every interface<br>work across screens and languages.</h2><p>Inspect your own local development website, identify measurable UI defects, preview a constrained CSS repair and re-run the audit before changing your source code.</p></div>
+    <div class="local-note"><b>Local development sites only</b><br>Use <code>localhost</code> or <code>127.0.0.1</code> with the port where your app is running. Public URLs are intentionally blocked in this release.</div>
+  </section>
+
+  <section class="controls">
+    <div class="field"><label for="url">Target local website</label><input id="url" value="http://127.0.0.1:8000/demo" placeholder="http://127.0.0.1:3000"><small>Example: a React/Vite app on port 5173 or a Flask app on port 5000.</small></div>
+    <div class="field"><label for="width">Viewport</label><select id="width"><option value="390">Mobile · 390px</option><option value="412">Mobile · 412px</option><option value="1280">Desktop · 1280px</option></select><small>Height is selected automatically.</small></div>
+    <div class="field"><label for="language">Language</label><select id="language"><option value="ta">Tamil · தமிழ்</option><option value="hi">Hindi · हिन्दी</option><option value="en">English</option><option value="de">German · Deutsch</option></select><small>Translation requires the page to expose a language switch hook.</small></div>
+    <div class="actions"><button class="btn primary" id="auditBtn" onclick="audit()">Run visual audit</button><button class="btn secondary" id="healBtn" onclick="heal()">Preview CSS repair</button></div>
+  </section>
+
+  <section class="metrics">
+    <div class="metric"><div class="label">Elements checked</div><strong id="elementsCount">—</strong></div>
+    <div class="metric"><div class="label">Measured issues</div><strong id="issuesCount">—</strong></div>
+    <div class="metric"><div class="label">Review notes</div><strong id="notesCount">—</strong></div>
+    <div class="metric"><div class="label">Viewport</div><strong id="viewportLabel">—</strong></div>
+  </section>
+
+  <section class="workspace">
+    <article class="panel">
+      <div class="panel-head"><div><h3>Baseline render</h3><p class="panel-sub">Measured issue locations are outlined in red.</p></div><span class="mini-tag">BEFORE</span></div>
+      <img id="before" class="shot" alt="Before audit screenshot" hidden>
+      <div id="beforeEmpty" class="shot empty">Run an audit to capture the target page.</div>
+      <div id="beforeIssues" class="issue-list muted">No baseline results yet.</div>
+      <div id="beforeNotes" class="note-list"></div>
+    </article>
+    <article class="panel">
+      <div class="panel-head"><div><h3>Repair preview</h3><p class="panel-sub">A temporary CSS patch is applied in the browser only.</p></div><span class="mini-tag">AFTER</span></div>
+      <img id="after" class="shot" alt="After repair screenshot" hidden>
+      <div id="afterEmpty" class="shot empty">Preview a repair to capture the updated page.</div>
+      <div id="afterIssues" class="issue-list muted">No repair results yet.</div>
+      <div id="afterNotes" class="note-list"></div>
+    </article>
+    <article class="panel wide">
+      <div class="panel-head"><div><h3>Repair reasoning & CSS patch</h3><p class="panel-sub">Review the patch before copying it into your own codebase.</p></div><span class="mini-tag" id="repairSource">NOT RUN</span></div>
+      <div id="explanation" class="muted" style="font-size:12px;line-height:1.6">The local Llama model may propose a constrained patch. If its response is unavailable or fails validation, a safe rule-based preview may be used.</div>
+      <pre id="patch">No CSS patch generated yet.</pre>
+      <div class="actions"><button class="btn secondary" id="copyBtn" onclick="copyPatch()" disabled>Copy CSS patch</button><a class="btn secondary" id="openTarget" href="/demo" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;text-decoration:none">Open bundled demo</a></div>
+      <div id="status" class="status">Ready. Enter a local development URL and run an audit.</div>
+    </article>
+    <article class="panel wide">
+      <div class="panel-head"><div><h3>Audit coverage & safety</h3><p class="panel-sub">What this version actually measures.</p></div><span class="mini-tag">CURRENT CAPABILITIES</span></div>
+      <p class="muted" style="font-size:12px;line-height:1.8;margin:0">PerceptaHeal checks document and element overflow, possible text clipping, overlap between controls/badges, and text contrast where a solid background color can be established. It records review notes for gradient/image contrast that is not measured, missing image alt text, small interactive targets and language hooks that are unavailable. External network resources are blocked during the server-side browser session. Repair CSS is applied only to a temporary Playwright preview; the target website's source files are never modified.</p>
+      <div class="legend"><span><i class="swatch"></i> Measured issue</span><span><i class="swatch amber"></i> Review note / not fully measured</span></div>
+      <div class="link-row"><a href="/demo" target="_blank" rel="noopener">Open bundled NovaPay demo ↗</a><a href="/health" target="_blank" rel="noopener">Backend health ↗</a><a href="/docs" target="_blank" rel="noopener">API documentation ↗</a></div>
+    </article>
+  </section>
+  <footer class="footer"><span>PerceptaHeal · Local-first UI quality assurance</span><span>Preview repairs do not modify source code.</span></footer>
 </div>
-<div class="statrow"><div class="stat">Elements checked<strong id="elementsCount">—</strong></div><div class="stat">Measured issues<strong id="issuesCount">—</strong></div><div class="stat">Review notes<strong id="notesCount">—</strong></div><div class="stat">Viewport<strong id="viewportLabel">—</strong></div></div>
-<div class="grid">
-<section class="card"><h3>Before screenshot · defects outlined in red</h3><img id="before" class="shot" alt="Before audit screenshot"><div id="beforeIssues" class="muted">Run an audit to see measured issues.</div><h4>Visual review notes</h4><div id="beforeNotes" class="muted">No review notes yet.</div></section>
-<section class="card"><h3>After screenshot · defects outlined in red</h3><img id="after" class="shot" alt="After repair screenshot"><div id="afterIssues" class="muted">Run auto-heal to see the repaired page.</div><h4>Visual review notes</h4><div id="afterNotes" class="muted">No review notes yet.</div></section>
-<section class="card wide"><h3>Repair explanation</h3><p id="explanation" class="muted">Local Llama 3.2 may propose a constrained CSS repair. A deterministic demo patch is used if its proposal fails validation.</p><h3>CSS patch</h3><pre id="patch">No patch generated yet.</pre><p id="status" class="muted">Ready.</p></section>
-<section class="card wide"><h3>What this version checks</h3><p class="muted">Measured page and element overflow, possible text clipping, overlap between controls and badges, and text contrast where a solid background color can be established. It records review notes when contrast cannot be assessed against an image or gradient. Screenshots mark measured issue areas in red. This is not yet general screenshot understanding or a complete WCAG audit.</p><div class="actions"><a href="/demo" target="_blank" style="color:#93c5fd">Open demo page</a><a href="/demo-healed" target="_blank" style="color:#93c5fd">Open healed page</a></div></section>
-</div></div>
 <script>
 const $=id=>document.getElementById(id);
-function params(){return {url:$('url').value,width:Number($('width').value),height:844,language:$('language').value}}
+function params(){const w=Number($('width').value);return {url:$('url').value.trim(),width:w,height:w>=900?800:844,language:$('language').value}}
 function safeText(value){return String(value??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');}
-function renderIssues(target,data){target.innerHTML='';if(!data.issues.length){target.innerHTML='<p class="good">No measured issues detected by the current checks.</p>';return;}for(const [index,x] of data.issues.entries()){const d=document.createElement('div');d.className='issue';const selector=x.selector?'<br><code>'+safeText(x.selector)+'</code>':'';const text=x.text?'<br><span class="muted">Text: '+safeText(x.text)+'</span>':'';const fix=x.recommendedFix?'<br><b>Suggested review:</b> '+safeText(x.recommendedFix):'';d.innerHTML='<b>#'+(index+1)+' · '+safeText(x.type)+'</b>'+selector+'<br>'+safeText(x.message)+text+'<br><span class="muted">'+safeText(x.measured||'')+'</span>'+fix;target.appendChild(d);}}
-function renderNotes(target,data){target.innerHTML='';if(!data.notes?.length){target.innerHTML='<p class="good">No additional review notes.</p>';return;}for(const x of data.notes){const d=document.createElement('div');d.className='note';d.innerHTML='<b>'+safeText(x.type)+'</b>'+(x.selector?' · <code>'+safeText(x.selector)+'</code>':'')+'<br>'+safeText(x.message)+'<br><span class="muted">'+safeText(x.measured||'')+'</span>';target.appendChild(d);}}
+function setStatus(message,kind=''){ $('status').className='status '+kind; $('status').textContent=message; }
+function showShot(id,emptyId,url){if(url){$(id).src=url+'?t='+Date.now();$(id).hidden=false;$(emptyId).hidden=true;}else{$(id).hidden=true;$(emptyId).hidden=false;}}
+function renderIssues(target,data){target.innerHTML='';if(!data.issues?.length){target.innerHTML='<div class="good">No measured issues detected by the current checks.</div>';return;}for(const [index,x] of data.issues.entries()){const d=document.createElement('div');d.className='issue';const selector=x.selector?'<br><code>'+safeText(x.selector)+'</code>':'';const text=x.text?'<br><span class="muted">Text: '+safeText(x.text)+'</span>':'';const fix=x.recommendedFix?'<br><b>Suggested review:</b> '+safeText(x.recommendedFix):'';d.innerHTML='<b>#'+(index+1)+' · '+safeText(x.type)+'</b>'+selector+'<br>'+safeText(x.message)+text+'<br><span class="muted">'+safeText(x.measured||'')+'</span>'+fix;target.appendChild(d);}}
+function renderNotes(target,data){target.innerHTML='';if(!data.notes?.length)return;for(const x of data.notes){const d=document.createElement('div');d.className='note';d.innerHTML='<b>'+safeText(x.type)+'</b>'+(x.selector?' · <code>'+safeText(x.selector)+'</code>':'')+'<br>'+safeText(x.message)+'<br><span class="muted">'+safeText(x.measured||'')+'</span>';target.appendChild(d);}}
 function updateStats(data){$('elementsCount').textContent=data.elements_checked;$('issuesCount').textContent=data.issue_count;$('notesCount').textContent=data.note_count??0;$('viewportLabel').textContent=data.viewport.width+' × '+data.viewport.height;}
-async function audit(){ $('status').textContent='Running browser audit…';try{const r=await fetch('/api/audit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(params())});const d=await r.json();if(!r.ok)throw Error(d.detail||'Audit failed');$('before').src=d.screenshot+'?t='+Date.now();renderIssues($('beforeIssues'),d);renderNotes($('beforeNotes'),d);updateStats(d);$('status').textContent=`${d.language.toUpperCase()} audit complete: ${d.issue_count} measured issue(s), ${d.note_count} review note(s), ${d.elements_checked} elements checked.`;}catch(e){$('status').textContent='Error: '+e.message;}}
-async function heal(){ $('status').textContent='Starting repair: baseline audit → local model proposal → verification.';const heartbeat=setTimeout(()=>$('status').textContent='Still working: waiting for the local model or deterministic repair. The browser will update when verification finishes.',10000);try{const r=await fetch('/api/heal',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(params())});const d=await r.json();if(!r.ok)throw Error(d.detail||'Repair failed');$('before').src=d.before.screenshot+'?t='+Date.now();$('after').src=d.after.screenshot+'?t='+Date.now();renderIssues($('beforeIssues'),d.before);renderIssues($('afterIssues'),d.after);renderNotes($('beforeNotes'),d.before);renderNotes($('afterNotes'),d.after);$('patch').textContent=d.css_patch;$('explanation').textContent=d.ai_explanation;updateStats(d.after);if(d.verified){$('status').innerHTML='<span class="good">Verified against implemented checks: all measured issues cleared and no new measured issues introduced. Review notes: '+(d.after.note_count??0)+'.</span>';}else if(d.improved){$('status').innerHTML='<span class="bad">Partial improvement: '+d.resolved_count+' issue(s) resolved, '+d.after.issue_count+' measured issue(s) remain. Do not mark as complete.</span>';}else{$('status').innerHTML='<span class="bad">Not verified: re-audit did not demonstrate a reliable improvement. Manual review is required.</span>'; }}catch(e){$('status').textContent='Error: '+e.message;}finally{clearTimeout(heartbeat);}}
-</script></body></html>
+function busy(value){$('auditBtn').disabled=value;$('healBtn').disabled=value;$('auditBtn').innerHTML=value?'<i class="spinner"></i>Working…':'Run visual audit';$('healBtn').textContent=value?'Please wait…':'Preview CSS repair';}
+async function checkLlm(){try{const r=await fetch('/api/llm-status');const d=await r.json();$('llmBadge').innerHTML='<i class="dot '+(d.available?'ok':'warn')+'"></i> '+safeText(d.available?'Llama installed':'Llama offline');$('llmBadge').title=d.message;}catch(e){$('llmBadge').innerHTML='<i class="dot warn"></i> Llama status unknown';}}
+async function audit(){busy(true);setStatus('Opening the local target in Chromium and measuring its rendered layout…');try{const r=await fetch('/api/audit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(params())});const d=await r.json();if(!r.ok)throw Error(d.detail||'Audit failed');showShot('before','beforeEmpty',d.screenshot);renderIssues($('beforeIssues'),d);renderNotes($('beforeNotes'),d);updateStats(d);$('after').hidden=true;$('afterEmpty').hidden=false;$('afterIssues').textContent='Run Preview CSS repair to inspect the after state.';$('afterNotes').innerHTML='';$('patch').textContent='No CSS patch generated yet.';$('repairSource').textContent='NOT RUN';$('copyBtn').disabled=true;$('explanation').textContent=d.language_applied?'The target page applied its language switch hook.':'The target page has no language switch hook; visible text was not translated by the auditor.';setStatus(`${d.language.toUpperCase()} audit complete: ${d.issue_count} measured issue(s), ${d.note_count} review note(s), ${d.elements_checked} elements checked.`,d.issue_count?'warning':'success');}catch(e){setStatus('Audit error: '+e.message,'error');}finally{busy(false);}}
+async function heal(){busy(true);setStatus('Running baseline audit → requesting a constrained repair → previewing it → re-auditing…');const heartbeat=setTimeout(()=>setStatus('Still working: waiting for local Llama or the safe rule-based repair. This may take a little longer on CPU.'),8000);try{const r=await fetch('/api/heal',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(params())});const d=await r.json();if(!r.ok)throw Error(d.detail||'Repair preview failed');showShot('before','beforeEmpty',d.before.screenshot);showShot('after','afterEmpty',d.after.screenshot);renderIssues($('beforeIssues'),d.before);renderIssues($('afterIssues'),d.after);renderNotes($('beforeNotes'),d.before);renderNotes($('afterNotes'),d.after);updateStats(d.after);$('patch').textContent=d.css_patch||'No safe patch was generated for the measured findings.';$('explanation').textContent=d.ai_explanation;$('repairSource').textContent=d.repair_source||'NONE';$('copyBtn').disabled=!d.css_patch;if(d.verified)setStatus(`Verified against implemented checks: ${d.resolved_count} issue(s) resolved; zero measured issues remain. Review notes: ${d.after.note_count}. Source files were not modified.`, 'success');else if(d.improved)setStatus(`Partial improvement: ${d.resolved_count} issue(s) resolved; ${d.after.issue_count} measured issue(s) remain.`, 'warning');else setStatus('Repair not verified: measured issues remain or no safe patch was available. Inspect both screenshots.', 'error');}catch(e){setStatus('Repair error: '+e.message,'error');}finally{clearTimeout(heartbeat);busy(false);}}
+async function copyPatch(){const value=$('patch').textContent;if(!value||value.startsWith('No CSS'))return;try{await navigator.clipboard.writeText(value);setStatus('CSS patch copied. Review it and apply it manually in your own source code.','success');}catch(e){setStatus('Clipboard access failed. Select and copy the CSS patch manually.','warning');}}
+checkLlm();
+</script>
+</body>
+</html>

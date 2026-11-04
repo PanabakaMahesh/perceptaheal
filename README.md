@@ -1,164 +1,109 @@
-# PerceptaHeal
+# PerceptaHeal v0.5 — Matte Black Studio
 
-### AI-Powered Multilingual Visual UI Auditor & Self-Healing CSS Engine
+**PerceptaHeal** is a local-first, AI-assisted multilingual UI auditor and CSS repair-preview tool. It inspects the rendered layout of your own local development website, reports measurable issues, proposes a constrained CSS patch and re-runs the browser audit against a temporary preview.
 
-PerceptaHeal is an AI-assisted website quality testing application designed to identify and repair visual layout problems that can occur across different screen sizes and languages.
+## What this version does
 
-It focuses on multilingual UI issues such as text clipping, content overflow, overlapping elements and responsive layout problems.
+- Matte-black dashboard with viewport, language and target-URL controls.
+- Audits local development sites at `http://localhost:<port>` or `http://127.0.0.1:<port>`.
+- Uses Playwright/Chromium to render and capture the selected page.
+- Measures page/element horizontal overflow and possible vertical text clipping.
+- Checks overlap between controls and badge-like elements.
+- Measures text contrast only when a solid opaque background color can be established.
+- Flags gradient/image contrast as not pixel-measured and can suggest a temporary black-text preview for light headings and paragraphs on gradients. Also records notes for missing image alt text, small controls and missing language-switch hooks.
+- Highlights measured issue locations in the screenshot.
+- Uses local Meta Llama 3.2 3B through Ollama when available to propose CSS.
+- Validates selectors and CSS declarations against a strict allowlist.
+- Uses a conservative rule-based preview when a model proposal is unavailable or invalid.
+- Re-audits after the patch and labels the result as verified, partial or not verified.
 
-## Problem Statement
+## Safety and limitations
 
-A website that looks correct in one language or screen size may become difficult to use when translated into another language or viewed on a smaller device.
+- **Public URLs are not supported.** Only `localhost`, `127.0.0.1` and `::1` are accepted.
+- Requests from the server-side browser to non-local hosts are blocked. A local site that depends on external CDNs may render incompletely during the audit.
+- Language selection changes visible text only when the target page exposes `window.setLang(language)`. Otherwise, the document language metadata is set, but the page's content is not translated by PerceptaHeal.
+- The CSS repair is a **temporary Playwright preview**. It does not edit or save changes to the target site's source files. Review the CSS and apply it manually if appropriate.
+- The model is not guaranteed to be used for every repair. The dashboard reports whether Llama or the safe rule-based fallback supplied the patch.
+- This is not a complete WCAG audit or general screenshot-understanding system. Gradients, photographs, translucent layers and other cases may be reported as not measured.
+- A zero measured-issue count means only that the implemented checks did not detect an issue; it does not prove universal visual correctness.
 
-For example:
-- Tamil and Hindi text may be clipped due to insufficient line height.
-- Longer German text may overflow buttons and containers.
-- Promotional badges may overlap call-to-action buttons.
-- Responsive layouts may behave differently across mobile and desktop screens.
+## Requirements
 
-Traditional layout checks do not identify every visual usability problem.
+- Ubuntu or another Linux development environment
+- Python 3.10+
+- VS Code (optional)
+- Ollama with `llama3.2:3b` (optional; audits work without it)
 
-## Proposed Solution
-
-PerceptaHeal provides a workflow to inspect a website, identify measurable visual defects, suggest CSS corrections and verify the repaired page.
-
-**Core workflow:**
-
-Detect → Explain → Repair → Verify
-
-## Key Features
-
-- Multilingual testing: Tamil, Hindi, English and German.
-- Responsive viewport testing: Mobile 390px, Mobile 412px and Desktop 1280px.
-- Browser-based website inspection using Playwright.
-- Detection of horizontal and vertical content overflow.
-- Detection of potential text clipping.
-- Identification of overlapping interactive elements.
-- Contrast measurement where supported by available color information.
-- Screenshot-based defect highlighting.
-- Safe CSS repair with validation.
-- Before-and-after screenshot comparison.
-- Automatic re-audit after repairs.
-
-## Technology Stack
-
-| Component | Technology |
-|---|---|
-| Programming Language | Python |
-| Backend | FastAPI |
-| Browser Automation | Playwright |
-| Frontend | HTML, CSS, JavaScript |
-| AI Model | Meta Llama 3.2 3B through Ollama (optional local integration) |
-| Data Storage | Local file-based MVP |
-
-## AI Integration
-
-PerceptaHeal is designed to use Meta Llama 3.2 3B through local Ollama inference to assist with CSS repair suggestions.
-
-Generated CSS is subject to safety validation before it is applied.
-
-When the model is unavailable or produces an invalid or unsafe repair, the application can use a predefined safe fallback.
-
-The application also uses deterministic browser measurements to verify layout changes rather than relying only on the language model's claims.
-
-## System Architecture
-
-1. User selects a target website, language and viewport.
-2. FastAPI receives the audit request.
-3. Playwright renders the selected page.
-4. The audit engine measures relevant DOM layout properties.
-5. Detected issues are displayed with screenshot highlights.
-6. The repair engine generates or selects a safe CSS correction.
-7. Playwright captures the repaired page.
-8. The second audit evaluates the measured changes.
-
-## Installation – Ubuntu
-
-### 1. Clone the repository
+## Install on Ubuntu
 
 ```bash
-git clone https://github.com/PanabakaMahesh/perceptaheal.git
-cd perceptaheal
-```
-
-### 2. Create a virtual environment
-
-```bash
+sudo apt update
+sudo apt install -y python3 python3-venv python3-pip git curl
+cd ~/projects/perceptaheal_starter
 python3 -m venv .venv
 source .venv/bin/activate
-```
-
-### 3. Install dependencies
-
-```bash
+python -m pip install --upgrade pip
 pip install -r requirements.txt
-```
-
-### 4. Install Chromium
-
-```bash
 python -m playwright install chromium
 ```
 
-### 5. Optional local AI model
-
-Install Ollama and download the model:
+Install Ollama separately if you want local model-assisted repair:
 
 ```bash
+curl -fsSL https://ollama.com/install.sh | sh
 ollama pull llama3.2:3b
 ```
 
-### 6. Start the application
+## Run PerceptaHeal
 
 ```bash
+cd ~/projects/perceptaheal_starter
+source .venv/bin/activate
+python -m compileall app.py audit_engine.py
 python -m uvicorn app:app --reload --host 127.0.0.1 --port 8000
 ```
 
-Open the application:
+Open `http://127.0.0.1:8000`.
 
-http://127.0.0.1:8000
+## Audit another local website
 
-## Current Testing Coverage
+Start your own frontend/backend development server in a second terminal. For example, to serve the included sample page on port 8765:
 
-The bundled demo supports four language options:
+```bash
+cd ~/projects/perceptaheal_starter
+python3 -m http.server 8765 --directory examples
+```
 
-- Tamil
-- Hindi
-- English
-- German
+In PerceptaHeal, enter:
 
-It supports three viewport configurations:
+```text
+http://127.0.0.1:8765/sample_site.html
+```
 
-- 390px mobile
-- 412px mobile
-- 1280px desktop
+Select a viewport and run the audit. You can use the same approach for your own Vite, React, Flask, Django or other local development server. The page must be reachable from the same Ubuntu machine.
 
-The current implementation uses DOM-based measurements and defined visual checks. It does not claim complete pixel-level visual understanding or automated contrast verification over every gradient and photograph.
+## Repair preview
 
-The multilingual content is currently implemented for the bundled demonstration page.
+Click **Preview CSS repair**. PerceptaHeal will:
 
-## Hardware Used
+1. Capture a baseline audit.
+2. Ask local Llama for a constrained CSS proposal if available.
+3. Validate the generated CSS.
+4. Use a safe rule-based preview if the model response is unavailable or rejected.
+5. Inject the patch into a temporary Playwright browser page.
+6. Capture and re-audit the result.
 
-Development environment:
+The returned CSS is displayed for review and can be copied. The target website's source files are not modified.
 
-- Intel Core i5-1235U
-- 16 GB RAM
-- NVIDIA GeForce MX550 2 GB
-- Ubuntu Linux
-- Visual Studio Code
+## API endpoints
 
-## Future Improvements
-
-- General-purpose website inspection.
-- Screenshot-based visual defect analysis.
-- Improved multilingual typography verification.
-- More advanced contrast and accessibility evaluation.
-- Context-aware AI CSS generation.
-- Multi-viewport regression testing.
-- Exportable visual audit reports.
+- `GET /` — dashboard
+- `GET /demo` — bundled multilingual demo page
+- `GET /health` — backend health
+- `GET /api/llm-status` — local Ollama model availability
+- `POST /api/audit` — audit a local website
+- `POST /api/heal` — create a temporary CSS repair preview and re-audit
 
 ## License
 
-This project's original source code is licensed under the MIT License. See the LICENSE file for details.
-
-Third-party libraries, models and external assets remain subject to their respective licenses and terms.
+Original PerceptaHeal source code is licensed under the MIT License. See `LICENSE`. Third-party software, models and assets remain subject to their own licenses and terms.

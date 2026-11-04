@@ -1,26 +1,25 @@
-# Python virtual environment
+# Python
 .venv/
 venv/
 __pycache__/
 *.py[cod]
 
-# Environment variables and secrets
+# Secrets
 .env
 .env.*
 !.env.example
 
-# Logs and temporary files
+# Logs and caches
 *.log
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
 .DS_Store
 
-# Temporary audit screenshots
-static/audit_before.png
-static/audit_after.png
+# Generated audit artefacts
+static/audit_*.png
+static/demo_target_healed.html
 
-# Model and cache files
+# Model weights and caches
 models/
 .cache/
-static/demo_target_healed.html
